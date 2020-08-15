@@ -22,7 +22,7 @@ def main():
     if args.period == None:
         # one time readout for testing
         print('# timestamp C1   C2   C3   C4')
-        print(' '.join(pcl.read_from_web(args.host)))
+        print(data_to_str(data))
     else:
         # read continuously and do not return
         recorder = pcl.Writer(args.storage, args.host)

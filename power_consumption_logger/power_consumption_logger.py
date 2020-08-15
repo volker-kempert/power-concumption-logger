@@ -66,7 +66,7 @@ def read_from_web(host='cmatic-xxxxx'):
 
 
 def data_to_str(data):
-    return '{} {} {} {} {}'.format(data[0], data[1], data[2], data[3], data[4])
+    return '{};{};{};{};{}'.format(data[0], data[1], data[2], data[3], data[4])
 
 class Writer:
 
