@@ -4,17 +4,18 @@ import datetime
 import sys
 from pathlib import Path
 import time
+import os
+
+
+def read_from_web_sim():
+    timestamp = datetime.datetime.now().isoformat(timespec='seconds')
+    return [ timestamp, '0.1', '0.1', '0.1']
 
 
 def read_from_web(host='cmatic-xxxxx'):
-    """Read the data from the host interface (pure function)
+    """Read the data from the host interface
 
-    Parameters
-    ----------
-
-    Returns
-    -------
-    - example {
+    Reads a JSON struct like {
         "StatusSNS": {
             "Time": "2018-11-11T13:46:56",
             "COUNTER": {
@@ -25,18 +26,35 @@ def read_from_web(host='cmatic-xxxxx'):
                 }
             }
         }
+    from a web CDN
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+
+    array of [timestamp: string, c1: float c2: float, c3: float, c4: float]
+
+
+    Exception:
+    ----------
+    in case of read error it exits the program with code 1
 
     """
+    if host == 'simulate':
+        # shortcut for testing
+        return read_from_web_sim()
     try:
         r = requests.get('http://' + host + '/cm?cmnd=Status 10')
         data = r.json()
-        return String.format('{} {} {} {} {}\n',
+        return [
             data['StatusSNS']['Time'],
             data['StatusSNS']['COUNTER']['C1'],
             data['StatusSNS']['COUNTER']['C2'],
             data['StatusSNS']['COUNTER']['C3'],
             data['StatusSNS']['COUNTER']['C4']
-        )
+        ]
     except requests.exceptions.ConnectionError as err:
         print('Connection error: {}'.format(err))
         sys.exit(1)
@@ -46,6 +64,7 @@ class Writer:
 
     def __init__(self, dirname, host):
         self.dirname = dirname
+        self.host = host
         # make sure file exists and is writeable or throw an io exception
         try:
             path=Path(self.dirname)
@@ -53,8 +72,7 @@ class Writer:
         except EnvironmentError:
             # parent of IOError, OSError *and* WindowsError where available
             print('Cannot create storage location {}'.format(self.dirname))
-            sys.exit(1)
-        self.filename = os.path.join(self.dirname, 'cmatic-{}'.format(datetime.date.today()))
+            sys.exit(2)
 
     def _write_data(self, data):
         """Write data to file persistently.
@@ -78,21 +96,23 @@ class Writer:
 
 
         """
+        iso_date = data[0][:10]  # 1st 10 letters form iso format are the date
+        filename = os.path.join(self.dirname, 'cmatic_' + iso_date + '.csv')
+
         try:
-            with open(self.filename, 'a') as f:
-                f.write(data)
+            with open(filename, 'a') as f:
+                f.write(' '.join(data) + '\n')
         except EnvironmentError:
             # parent of IOError, OSError *and* WindowsError where available
             print('Cannot write data to file {}'.format(file_name))
             sys.exit(2)
 
-    def record(period_in_sec: int):
+    def record(self, period_in_sec: int):
         """Record a dataset continuously
 
         In a single thread, block while sleeping
         Never return
         """
         while True:
-            self._write_data(read_from_web(self.url))
+            self._write_data(read_from_web(self.host))
             time.sleep(period_in_sec)
-

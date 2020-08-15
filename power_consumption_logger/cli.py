@@ -18,8 +18,8 @@ def main():
     args = parser.parse_args()
     if args.period == None:
         # one time readout for testing
-        print('#timestamp C1 C2 C3 C4')
-        print(pcl.read_from_web(args.host))
+        print('# timestamp C1   C2   C3   C4')
+        print(' '.join(pcl.read_from_web(args.host)))
     else:
         # read continuously and do not return
         recorder = pcl.Writer(args.storage, args.host)
