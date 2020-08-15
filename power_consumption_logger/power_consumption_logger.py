@@ -9,7 +9,7 @@ import os
 
 def read_from_web_sim():
     timestamp = datetime.datetime.now().isoformat(timespec='seconds')
-    return [ timestamp, '0.1', '0.1', '0.1']
+    return [ timestamp, 1, 2, 3, 4]
 
 
 def read_from_web(host='cmatic-xxxxx'):
@@ -34,7 +34,7 @@ def read_from_web(host='cmatic-xxxxx'):
     Returns
     -------
 
-    array of [timestamp: string, c1: float c2: float, c3: float, c4: float]
+    array of [timestamp: string, c1: int c2: int, c3: int, c4: int]
 
 
     Exception:
@@ -46,8 +46,13 @@ def read_from_web(host='cmatic-xxxxx'):
         # shortcut for testing
         return read_from_web_sim()
     try:
-        r = requests.get('http://' + host + '/cm?cmnd=Status%2010')
+        url = 'http://cmatic-' + host + '/cm'
+        # param = {'cmnd': 'Status 10'.encode("utf-8")}
+        param = '?cmnd=Status%2010'
+        print ('{} param {}'.format(url, param))
+        r = requests.get(url + param)
         data = r.json()
+        print(data)
         return [
             data['StatusSNS']['Time'],
             data['StatusSNS']['COUNTER']['C1'],
@@ -59,6 +64,9 @@ def read_from_web(host='cmatic-xxxxx'):
         print('Connection error: {}'.format(err))
         sys.exit(1)
 
+
+def data_to_str(data):
+    return '{} {} {} {} {}'.format(data[0], data[1], data[2], data[3], data[4])
 
 class Writer:
 
@@ -101,7 +109,7 @@ class Writer:
 
         try:
             with open(filename, 'a') as f:
-                f.write(' '.join(data) + '\n')
+                f.write(data_to_str(data) + '\n')
         except EnvironmentError:
             # parent of IOError, OSError *and* WindowsError where available
             print('Cannot write data to file {}'.format(file_name))

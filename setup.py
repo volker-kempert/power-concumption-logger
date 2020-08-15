@@ -14,7 +14,7 @@ requirements = [ 'requests==2.24.0' ]
 
 setup_requirements = ['pytest-runner', ]
 
-test_requirements = ['pytest>=3', ]
+test_requirements = ['pytest>=3', 'responses>=0.10.16']
 
 setup(
     author="Volker Kempert",
