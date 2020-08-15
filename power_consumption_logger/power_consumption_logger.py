@@ -46,7 +46,7 @@ def read_from_web(host='cmatic-xxxxx'):
         # shortcut for testing
         return read_from_web_sim()
     try:
-        url = 'http://cmatic-' + host + '/cm'
+        url = 'http://' + host + '/cm'
         # param = {'cmnd': 'Status 10'.encode("utf-8")}
         param = '?cmnd=Status%2010'
         print ('{} param {}'.format(url, param))
