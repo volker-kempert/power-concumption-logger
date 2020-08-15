@@ -1,9 +1,9 @@
 """Main module."""
 import requests
 import datetime
+import time
 import sys
 from pathlib import Path
-import time
 import os
 
 
@@ -46,7 +46,7 @@ def read_from_web(host='cmatic-xxxxx'):
         # shortcut for testing
         return read_from_web_sim()
     try:
-        r = requests.get('http://' + host + '/cm?cmnd=Status 10')
+        r = requests.get('http://' + host + '/cm?cmnd=Status%2010')
         data = r.json()
         return [
             data['StatusSNS']['Time'],

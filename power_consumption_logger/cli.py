@@ -7,8 +7,11 @@ import power_consumption_logger.power_consumption_logger as pcl
 def main():
     """Console script for power_consumption_logger."""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--host", default='cmatic-xxxxx',
-        help="the the hostname: if not set cmatic-xxxxxx is used")
+    parser.add_argument("--host", default='cmatic-D9CD14',
+        help="""The the hostname: if not set cmatic-D9CD14 is used
+            if host is set to 'simulate' artificial values (0.1)
+            are delivered without invoking the web service
+            """)
     parser.add_argument("--storage", default='.',
         help="Set a storage directory: if not set current directory is used")
     parser.add_argument("-p", "--period", type=int,
