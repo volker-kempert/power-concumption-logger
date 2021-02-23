@@ -12,7 +12,7 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [ 'requests==2.24.0' ]
 
-setup_requirements = ['pytest-runner', ]
+# setup_requirements = ['pytest-runner', ]
 
 test_requirements = ['pytest>=3', 'responses>=0.10.16']
 
@@ -41,13 +41,13 @@ setup(
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='power_consumption_logger',
-    name='power_consumption_logger',
+    keywords='power_logger',
+    name='power_logger',
     packages=find_packages(include=['power_consumption_logger', 'power_consumption_logger.*']),
-    setup_requires=setup_requirements,
+    # setup_requires=setup_requirements,
     test_suite='tests',
-    tests_require=test_requirements,
-    url='https://github.com/volker-kempert/power_consumption_logger',
+    # tests_require=test_requirements,
+    url='https://github.com/volker-kempert/power_logger',
     version='0.1.0',
     zip_safe=False,
 )
