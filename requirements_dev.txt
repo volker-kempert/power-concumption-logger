@@ -10,3 +10,7 @@ twine==1.14.0
 
 pytest==4.6.5
 pytest-runner==5.1
+typed-ast==1.4.2
+typing-extensions==3.7.4.3
+typish==1.9.1
+mock==4.0.3

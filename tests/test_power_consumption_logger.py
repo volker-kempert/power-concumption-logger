@@ -2,6 +2,7 @@
 
 """Tests for `power_consumption_logger` package."""
 
+from mock import Mock, patch
 import pytest
 import tempfile
 import os
@@ -13,7 +14,7 @@ import power_consumption_logger.power_consumption_logger as pcl
 
 
 @pytest.fixture(scope="module")
-def temp_dir ():
+def temp_dir():
     with tempfile.TemporaryDirectory() as tmpdirname:
         yield tmpdirname  # provide the fixture value
 
@@ -24,12 +25,14 @@ def helper_entry_available(filename, entry, line_no):
         print(content)
         return content[line_no] == pcl.data_to_str(entry)
 
+
 def test_create_storage_dir__and_fail():
     """ we do not have create access rights on / root dir so it fails"""
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         pcl.Writer('/Z:/', 'simulate')
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 2
+
 
 def test_create_storage_dir__ok(temp_dir):
     """ must be able to create something inside temp dir """
@@ -38,6 +41,7 @@ def test_create_storage_dir__ok(temp_dir):
     assert sut.dirname == new_dir
     assert os.path.isdir(new_dir)
 
+
 def test_create_new_measurement_file__one_line(temp_dir):
     data = ['2020-08-19T22:55:00', 1, 1, 1, 1]
     sut = pcl.Writer(temp_dir, 'simulate')
@@ -45,6 +49,7 @@ def test_create_new_measurement_file__one_line(temp_dir):
     sut._write_data(data)
     assert os.path.isfile(expected_file)
     assert helper_entry_available(expected_file, data, 0)
+
 
 def test_create_new_measurement_file__three_line(temp_dir):
     data1 = ['2020-08-20T08:55:00', 1, 1, 1, 1]
@@ -77,7 +82,7 @@ def test_web_response__ok():
         }, status=200)
 
     expected_response = ['2018-11-11T13:46:56',  109, 8, 6, 14]
-    assert pcl.read_from_web('D9CD14') == expected_response
+    assert pcl.read_from_web('cmatic-d9cd14') == expected_response
 
 @responses.activate
 def test_web_response__connection_error():
@@ -86,3 +91,40 @@ def test_web_response__connection_error():
         pcl.read_from_web('D9CD14')
     assert pytest_wrapped_e.type == SystemExit
     assert pytest_wrapped_e.value.code == 1
+
+
+def test_reset_counter():
+    mock = Mock()
+
+    with patch('requests.get', mock):
+        pcl.reset_counter('cmatic-d9cd14')
+        mock.assert_called_with('http://cmatic-d9cd14/cm?cmnd=Counter4%200')
+        assert mock.call_count == 4
+
+
+def test_reset_counters_with_reset(temp_dir):
+    read_mock = Mock()
+    read_mock.side_effect = [['2020-08-19T22:55:00', 1, 1, 1, 1],
+                             ['2020-08-20T00:00:00', 1, 1, 1, 1]]
+    reset_mock = Mock()
+    with patch('power_consumption_logger.power_consumption_logger.read_from_web', read_mock), \
+            patch('power_consumption_logger.power_consumption_logger.reset_counter', reset_mock):
+        sut = pcl.Writer(temp_dir, 'simulate')
+        sut._record_single()
+        assert reset_mock.call_count == 1
+        sut._record_single()
+        assert reset_mock.call_count == 2
+
+
+def test_reset_counters_no_reset(temp_dir):
+    read_mock = Mock()
+    read_mock.side_effect = [['2020-08-19T22:55:00', 1, 1, 1, 1],
+                             ['2020-08-19T23:00:00', 1, 1, 1, 1]]
+    reset_mock = Mock()
+    with patch('power_consumption_logger.power_consumption_logger.read_from_web', read_mock), \
+            patch('power_consumption_logger.power_consumption_logger.reset_counter', reset_mock):
+        sut = pcl.Writer(temp_dir, 'simulate')
+        sut._record_single()
+        assert reset_mock.call_count == 1
+        sut._record_single()
+        assert reset_mock.call_count == 1
